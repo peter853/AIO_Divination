@@ -1,0 +1,266 @@
+{$include_once SRL-6/SRL.simba}
+{$include_once sps/sps-rs3.simba}
+type
+  TRS_divAIOInfo = record
+    map_name, wisp_name: string;
+    wisp_color, _wXP, _ewXP: integer;
+    _eXP, _mXP: array [1..3] of extended;
+    rift_point: TPoint;
+    POIs: TPointArray;
+  end;
+
+type
+  TRS_divAIOInfoArray = array of TRS_divAIOInfo;
+
+type
+  TRS_div_info = record
+    div_AIOInfo: TRS_divAIOInfo;
+    area_map: TSPSArea;
+  end;
+
+
+var
+  div_info_array: TRS_divAIOInfoArray;
+  div_info: TRS_div_info;
+
+procedure TRS_divAIOInfoArray.__init();
+begin
+  setLength(self, 12);
+  with self[0] do
+  begin
+    map_name := 'pale_wisps';
+    wisp_name := 'Pale';
+    wisp_color := 8948320;
+    rift_point := [186, 162];
+    POIs := [[166,	136], [167,	189], [196,	182]];
+    _mXP[1] := 1;
+    _mXP[2] := 3;
+    _mXP[3] := 3.5;
+    _eXP[1] := 1;
+    _eXP[2] := 3;
+    _eXP[3] := 3.5;
+    _wXP := 1;
+    _ewXP := 1;
+  end;
+  with self[1] do
+  begin
+    map_name := 'flickering_wisps';
+    wisp_name := 'Flickering';
+    wisp_color := 8689518;
+    rift_point := [165, 167];
+    POIs := [[168, 142], [144, 149], [145, 126]];
+    _mXP[1] := 1;
+    _mXP[2] := 4;
+    _mXP[3] := 5;
+    _eXP[1] := 0;
+    _eXP[2] := 8;
+    _eXP[3] := 10;
+    _wXP := 2;
+    _ewXP := 4;
+  end;
+  with self[2] do
+  begin
+    map_name := 'bright_wisps';
+    wisp_name := 'Bright';
+    wisp_color := 14271127;
+    rift_point := [112,	218];
+    POIs := [[97,	234], [88,	199], [112,	195]];
+    _mXP[1] := 1;
+    _mXP[2] := 5;
+    _mXP[3] := 6.2;
+    _eXP[1] := 0;
+    _eXP[2] := 10;
+    _eXP[3] := 12.5;
+    _wXP := 3;
+    _ewXP := 6;
+  end;
+  with self[3] do
+  begin
+    map_name := 'glowing_wisps';
+    wisp_name := 'Glowing';
+    wisp_color := 10921347;
+    rift_point := [172, 167];
+    POIs := [[155, 165], [201, 154], [214, 138]];
+    _mXP[1] := 1;
+    _mXP[2] := 7;
+    _mXP[3] := 8.7;
+    _eXP[1] := 0;
+    _eXP[2] := 14;
+    _eXP[3] := 17.5;
+    _wXP := 4;
+    _ewXP := 8;
+  end;
+  with self[4] do
+  begin
+    map_name := 'sparkling_wisps';
+    wisp_name := 'Sparkling';
+    wisp_color := 10066032;
+    rift_point := [175, 158];
+    POIs := [[175, 192], [198, 190], [192, 167]];
+    _mXP[1] := 1;
+    _mXP[2] := 12;
+    _mXP[3] := 15;
+    _eXP[1] := 0;
+    _eXP[2] := 24;
+    _eXP[3] := 30;
+    _wXP := 5;
+    _ewXP := 10;
+  end;
+  with self[5] do
+  begin
+    map_name := 'gleaming_wisps';
+    wisp_name := 'Gleaming';
+    wisp_color := 7828034;
+    rift_point := [148,	156];
+    POIs := [[121, 153], [101, 121], [119, 110]];
+    _mXP[1] := 1;
+    _mXP[2] := 19;
+    _mXP[3] := 23.7;
+    _eXP[1] := 0;
+    _eXP[2] := 38;
+    _eXP[3] := 47.5;
+    _wXP := 6;
+    _ewXP := 12;
+  end;
+  with self[6] do
+  begin
+    map_name := 'vibrant_wisps';
+    wisp_name := 'Vibrant';
+    wisp_color := 12169852;
+    rift_point := [164, 141];
+    POIs := [[133, 137], [160, 168], [196, 146]];
+    _mXP[1] := 1;
+    _mXP[2] := 25;
+    _mXP[3] := 31.25;
+    _eXP[1] := 0;
+    _eXP[2] := 50;
+    _eXP[3] := 62.5;
+    _wXP := 7;
+    _ewXP := 14;
+  end;
+  with self[7] do
+  begin
+    map_name := 'lustrous_wisps';
+    wisp_name := 'Lustrous';
+    wisp_color := 12169852;
+    rift_point := [171,	144];
+    POIs := [[180, 172], [148, 179], [135, 142]];
+    _mXP[1] := 1;
+    _mXP[2] := 32;
+    _mXP[3] := 40;
+    _eXP[1] := 0;
+    _eXP[2] := 64;
+    _eXP[3] := 80;
+    _wXP := 8;
+    _ewXP := 16;
+  end;
+  with self[8] do
+  begin
+    map_name := 'brilliant_wisps';
+    wisp_name := 'Brilliant';
+    wisp_color := 10391630;
+    rift_point := [131,	207];
+    POIs := [[106, 184], [115, 170], [107, 149]];
+    _mXP[1] := 1;
+    _mXP[2] := 35;
+    _mXP[3] := 43.7;
+    _eXP[1] := 0;
+    _eXP[2] := 70;
+    _eXP[3] := 87.5;
+    _wXP := 9;
+    _ewXP := 18;
+  end;
+  with self[9] do
+  begin
+    map_name := 'radiant_wisps';
+    wisp_name := 'Radiant';
+    rift_point := [136, 144];
+    POIs := [[119, 125], [153, 116], [170, 134]];
+    wisp_color := 0;
+    _mXP[1] := 1;
+    _mXP[2] := 38;
+    _mXP[3] := 47.5;
+    _eXP[1] := 0;
+    _eXP[2] := 76;
+    _eXP[3] := 95;
+    _wXP := 10;
+    _ewXP := 20;
+  end;
+  with self[10] do
+  begin
+    map_name := 'luminous_wisps';
+    wisp_name := 'Luminous';
+    rift_point := [195, 153];
+    POIs := [[167, 172], [168, 131], [193, 123]];
+    wisp_color := 0;
+    _mXP[1] := 1;
+    _mXP[2] := 42;
+    _mXP[3] := 52.5;
+    _eXP[1] := 0;
+    _eXP[2] := 84;
+    _eXP[3] := 105;
+    _wXP := 11;
+    _ewXP := 22;
+  end;
+  with self[11] do
+  begin
+    map_name := 'incandescent_wisps';
+    wisp_name := 'Incandescent';
+    rift_point := [106, 171];
+    POIs := [[123, 148], [86, 129], [73, 118]];
+    wisp_color := 0;
+    _mXP[1] := 1;
+    _mXP[2] := 45;
+    _mXP[3] := 56.2;
+    _eXP[1] := 0;
+    _eXP[2] := 90;
+    _eXP[3] := 112.5;
+    _wXP := 12;
+    _ewXP := 24;
+  end;
+end;
+
+procedure TSPSArea.setupCustom(imgName: string);
+var
+  tmb: TMufasaBitmap;
+  path: string;
+  t: integer;
+begin
+  t := getSystemTime();
+
+  print('TSPSArea.init()', TDebug.HEADER);
+
+  path := 'maps\' + imgName + '.png';
+
+  self._accuracy := __DEFAULT_ACCURACY;
+  self._tolerance := __DEFAULT_TOLERANCE;
+  self.__mapPath := path;
+
+  if (spsAnyAngle) then
+    self._minMatchPercent := 0.10 // why? when rotated the bitmap gets bigger with alot of black around it, this will give a low match percentage if left high.
+  else
+    self._minMatchPercent := 0.7;
+
+  print('Using path "' + self.__mapPath + '"');
+
+  if (not fileExists(self.__mapPath)) then
+    print('SPS - Unable to find map image', TDebug.FATAL);
+
+  tmb.init(client.getMBitmaps());
+	tmb.loadFromFile(self.__mapPath);
+
+  SPS_BitmapToMap(tmb, self._accuracy, self.__areaMap);
+
+  tmb.free();
+
+  print('Setup SPS area "' + imgName + '" in ' + intToStr(getSystemTime() - t) + 'ms');
+  print('TSPSArea.init()', TDebug.FOOTER);
+end;
+
+procedure init_div_include(wisp: integer);
+begin
+  div_info_array.__init();
+  div_info.div_AIOInfo := div_info_array[wisp];
+  setLength(div_info_array, 0);
+  div_info.area_map.setupCustom(div_info.div_AIOInfo.map_name);;
+end;

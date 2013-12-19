@@ -1,0 +1,1 @@
+This script is for botting the divination skill in Runescape using Simba and SMART.

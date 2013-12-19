@@ -1,0 +1,47 @@
+pale_wisps
+    rift_point := [186, 162];
+    POIs := [[166,	136], [167,	189], [196,	182]]; 
+	
+flickering_wisps	
+    rift_point := [165, 167];
+    POIs := [[168, 142], [144, 149], [145, 126]];
+
+bright_wisps
+    rift_point := [112,	218];
+    POIs := [[97,	234], [88,	199], [112,	195]]; 
+	
+glowing_wisps
+    rift_point := [172, 167];
+    POIs := [[155, 165], [201, 154], [214, 138]];  
+
+sparkling_wisps
+    rift_point := [175, 158];
+    POIs := [[175, 192], [198, 190], [192, 167]];
+
+gleaming_wisps
+    rift_point := [148,	156];
+    POIs := [[121, 153], [101, 121], [119, 110]];
+
+vibrant_wisps
+    rift_point := [164, 141];
+    POIs := [[133, 137], [160, 168], [196, 146]];
+
+lustrous_wisps
+    rift_point := [171,	144];
+    POIs := [[180, 172], [148, 179], [135, 142]];
+	
+brilliant_wisps
+    rift_point := [131,	207];
+    POIs := [[106, 184], [115, 170], [107, 149]];
+	
+radiant_wisps
+    rift_point := [136, 144];
+    POIs := [[119, 125], [153, 116], [170, 134]];
+
+luminous_wisps
+    rift_point := [195, 153];
+    POIs := [[167, 172], [168, 131], [193, 123]];
+	
+incandescent_wisps
+    rift_point := [106, 171];
+    POIs := [[123, 148], [86, 129], [73, 118]];
