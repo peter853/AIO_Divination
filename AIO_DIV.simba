@@ -5,7 +5,7 @@ program AIO_Divination;
 {$I div_include.simba}
 
 var
-  memoriesCon, eMemoriesCon, totalMem, totalEMem, wisp_TPA_timer: integer;
+  memoriesCon, eMemoriesCon, totalMem, totalEMem, cMod, rift_colorEX: integer;
   mmCenter: TPoint;
   msBounds, mmBounds: TBox;
   wisp_TPA: TPointArray;
@@ -25,17 +25,17 @@ const
   SIPHON_LUMINOUS_WISPS = 10;
   SIPHON_INCANDESCENT_WISPS = 11;
 
+  _debug = true;
 procedure declarePlayers;
 begin
   setLength(players, 1);
   with players[0] do
   begin
-    integers[0] := 2;//1, 2 or 3 memory conversion options
+    integers[0] := 3;//1, 2 or 3 memory conversion options
     integers[1]  := SIPHON_LUSTROUS_WISPS;//wisp name
     booleans[0] := true;//Are you gaining %10 extra exp because of boon?
-    loginName   := 'log';
-    bankPin     := '1234';
-    password    := 'pass';
+    loginName   := '';
+    password    := '';
     isActive    := true;
     isMember    := true;
     world       := -1;
@@ -49,6 +49,17 @@ begin
   mmBounds := minimap.getBounds;
   mmCenter := minimap.getCenterPoint;
   init_div_include(players[currentPlayer].integers[1]);
+  cMod := players[currentPlayer].integers[1];
+end;
+
+function TPointArray.centerPoint(): TPoint;
+var
+  tmpArray: TPointArray;
+begin
+  if length(self) < 1 then exit;
+  tmpArray := self;
+  tmpArray.sortFromPoint(self.getMiddle);
+  result := tmpArray[0];
 end;
 
 function rn(rand: integer = 0): integer;
@@ -56,26 +67,168 @@ begin
   result := randomRange(-1*rand, rand);
 end;
 
-function findWisp: TPoint;
+function riftMM2: TPoint;
+begin
+  if not SPS_PosToMM(div_info.div_AIOInfo.rift_point, div_info.area_map.getPlayerPos, result) then
+    result := [0, 0];
+end;
+
+function validateRiftColor: boolean;
 var
-  wisps: TPointArray;
-  splitWisps: T2DPointArray;
-  MSCenter: TPoint;
+  tpa: TPointArray;
+begin
+  if findColors(tpa, rift_colorEX, minimap.getBounds) then
+  begin
+    FilterPointsPie(tpa, 0, 360, 0, 90, minimap.cx, minimap.cy);
+    if inRange(length(tpa), 15, 36) then result := true;
+  end else rift_colorEX := -1;
+end;
+
+function setRiftColor: boolean;
+var
+  r: TPoint;
+  tpa: TPointArray;
+  tia, cnt, unique: TIntegerArray;
+  b: TBox;
+  clr, i, h, j, h2: integer;
+begin
+  if (div_info.div_AIOInfo.rift_color = 0) then exit;
+  if validateRiftColor then exit(true);
+  r := riftMM2;
+  if r.equals([0, 0]) then exit;
+  b := intToBox(r.x-15, r.y-15, r.x+15, r.y+15);
+
+  if findColorsTolerance(tpa, div_info.div_AIOInfo.rift_color, b, 15) then
+  begin
+    tia := getColors(tpa, false);
+    h := high(tia);
+    for i := 0 to h do
+      if not inIntArray(unique, tia[i]) then insert(tia[i], unique)
+  end;
+  setLength(cnt, length(unique));
+  h2 := high(unique);
+  for i := 0 to h do
+  begin
+    for j := 0 to h2 do
+    begin
+      if tia[i] = unique[j] then inc(cnt[j]);
+    end;
+  end;
+  for j := 0 to h2 do
+  begin
+    if inRange(cnt[j], 15, 36) then
+    begin
+      rift_colorEX := unique[j];
+      exit(true)
+    end;
+  end;
+end;
+
+function riftMMEx: TPointArray;
+var
+  tpa: TPointArray;
+begin
+  if setRiftColor then if FindColors(tpa, rift_colorEX, mmBounds) then
+    if inRange(length(tpa), 15, 36) then result := tpa;
+end;
+
+function riftMM: TPoint;
+var
+  tpa: TPointArray;
+begin
+  tpa := riftMMEx;
+  if length(tpa) > 1 then result := tpa.centerPoint else result := riftMM2;
+end;
+
+function riftMS: T2DPointArray;
+var
+  rifty: TPointArray;
+  ms_rift: TPoint;
+  rifty2d: T2DPointArray;
   i, h: integer;
 begin
-  result := [0, 0];
-  MSCenter := [285, 200];
-  if not findColorsTolerance(wisps, 14269045, msBounds, 8, colorSetting(2, 0.63, 4.17)) then exit;
-  splitWisps := wisps.toATPA(15, 15);
-  setLength(wisps, 0);
-  h := high(splitWisps);
+  ms_rift := minimap.pointToMainscreen(riftMM);
+  if ms_rift.equals([-1, -1]) then exit;
+  if not findColorsTolerance(rifty, 8447955, msBounds, 31) then exit;
+  rifty2d := rifty.toATPA(15, 15);
+  rifty2d.sortBySize();
+  h := high(rifty2d);
 
+  for i := 0 to high(rifty2d) do
+    if length(rifty2d[i]) > 15 then insert(rifty2d[i], result) else exit;
+end;
+
+procedure TPointArray.filterBox(b: TBox);
+var
+  i, h, c: integer;
+begin
+  h := high(self);
+  c := 0;
   for i := 0 to h do
-    if length(splitWisps[i]) > 10 then insert(splitWisps[i].getMiddle, wisps);
+  begin
+    if (self[i].x > b.x1) and (self[i].x < b.x2) and (self[i].y > b.y1) and (self[i].y < b.y2) then
+      continue else
+      begin
+        self[c] := self[i];
+        inc(c);
+      end;
+  end;
+  setLength(self, c+1);
+end;
 
-  if length(wisps) <= 0 then exit;
-  wisps.sortFromPoint(MSCenter);
-  result := wisps[low(wisps)];
+procedure filterRiftMS(out tpa, tpa1: TPointArray);
+var
+  tempTPA: TPointArray;
+  ms, ms2: TPoint;
+  b: TBox;
+begin
+  if distance(mmCenter, riftMM) > 60 then exit;
+  b := riftMMEx.getBounds;
+
+  ms := minimap.pointToMainscreen(Point(b.x1, b.y1));
+  ms2 := minimap.pointToMainscreen(Point(b.x2, b.y2));
+
+  if ms.equals([-1, -1]) or ms2.equals([-1, -1]) then exit;
+
+  b := intToBox(ms.x-35, ms.y-35, ms2.x+35, ms2.y+35);
+  b.setLimit(mainscreen.getBounds);
+
+  tpa.filterBox(b);
+  tpa1.filterBox(b);
+end;
+
+function findWisps: T2DPointArray;
+var
+  lTPA, dTPA, tpa: TPointArray;
+  lATPA: T2DPointArray;
+  lBoxes: TBoxArray;
+  i, h: integer;
+begin
+  if not findColorsTolerance(lTPA, 12305048, mainscreen.getBounds, 13, colorSetting(2, 0.95, 1.72)) then exit;
+  if not findColorsTolerance(dTPA, 12305048, mainscreen.getBounds, 18, colorSetting(2, 0.27, 0.71)) then exit;
+  if (div_info.div_AIOInfo.rift_color <> 0) then filterRiftMS(lTPA, dTPA);
+  lATPA := lTPA.toATPA(5+cMod, 5+cMod);
+  lBoxes := lATPA.getEachBounds;
+  h := high(lBoxes);
+  for i := 0 to h do
+  begin
+    tpa := dTPA.copy;
+    lboxes[i].edit(-4, -4, 4, 4);
+    tpa.filterPointsBox(lBoxes[i]);
+    if length(tpa) > cMod then insert(lATPA[i], result);
+  end;
+end;
+
+function findWisp: TPoint;
+var
+  splitWisps: T2DPointArray;
+  MSCenter: TPoint = [285, 200];
+begin
+  result := [0, 0];
+  splitWisps := findWisps;
+  if length(splitWisps) < 1 then exit;
+  splitWisps.sortFromMidPoint(MSCenter);
+  result := splitWisps[0].centerPoint;
 end;
 
 function siphon: boolean;
@@ -107,12 +260,6 @@ begin
     result := length(yellowCount);
 end;
 
-function riftMM2: TPoint;
-begin
-  if not SPS_PosToMM(div_info.div_AIOInfo.rift_point, div_info.area_map.getPlayerPos, result) then
-    result := [0, 0];
-end;
-
 function moveToRift: boolean;
 begin
   result := div_info.area_map.blindWalk(div_info.div_AIOInfo.rift_point);
@@ -127,24 +274,36 @@ begin
   if tempPoint.equals([0, 0]) then
   begin
     index := randomRange(low(div_info.div_AIOInfo.POIs), high(div_info.div_AIOInfo.POIs));
-    result := div_info.area_map.blindWalk(div_info.div_AIOInfo.POIs[index]);
+    result := div_info.area_map.blindWalk(div_info.div_AIOInfo.POIs[index].rand(5));
   end else result := true;
+end;
+
+function exitSiphon: boolean
+var
+  spinPoint: TPoint;
+begin
+  if tabBackpack.isFull then exit(true);
+  if findSpinTicket(spinPoint) then
+      mouse(spinPoint.rand(rn(4)), Mouse_Left, Mouse_Human);
+  wait(randomRange(50, 100));
+  exitSquealOfFortune;
+  wait(randomRange(50, 100));
+  result := tabBackpack.isFull;
 end;
 
 procedure waitWhileSiphoning;
 var
   threshold, invCount, yellowCount: integer;
-  spinPoint: TPoint;
 begin
   threshold := getSystemTime + randomRange(3000,4000);
   invCount := tabBackpack.count;
   yellowCount := energyColorCount;
   while threshold > getSystemTime do
   begin
-    if findSpinTicket(spinPoint) then
-      mouse(spinPoint.rand(rn(4)), Mouse_Left, Mouse_Human);
-    if tabBackpack.isFull then exit;
-    wait(randomRange(200, 500));
+    status('Threshold: '+msToTime(threshold-getSystemTime, TIME_SHORT)+
+      ' - Inv Count: ' + toStr(invCount));
+    if exitSiphon then exit;
+    wait(100);
     if (invCount <> tabBackpack.count) or (yellowCount <> energyColorCount) then
     begin
       threshold := getSystemTime + randomRange(1800,2800);
@@ -172,22 +331,6 @@ begin
     end else if not moveToWisps then exit;
     wait(randomRange(100,200));
   end;
-end;
-
-function riftMS: TPointArray;
-var
-  rifty: TPointArray;
-  rifty2d: T2DPointArray;
-  i, h: integer;
-begin
-  if not findColorsTolerance(rifty, 8447955, msBounds, 31) then exit;
-  rifty2d := rifty.toATPA(15, 15);
-  rifty2d.sortBySize();
-  h := high(rifty2d);
-
-  for i := 0 to high(rifty2d) do
-    if length(rifty2d[i]) > 15 then
-      insert(rifty2d[i].getMiddle, result);
 end;
 
 procedure convertOption(i: integer = 0);
@@ -273,12 +416,24 @@ end;
 
 function waitWhileConverting: boolean;
 var
-  threshold: integer;
+  threshold, t, inv: integer;
 begin
   threshold := getSystemTime + randomRange(45000,60000);
-  while (threshold > getSystemTime) and (countMemories > 0) do
+  t := getSystemTime + randomRange(5000, 7000);
+  inv := tabBackpack.count;
+  while (threshold > getSystemTime) and (countMemories > 0) and (t > getSystemTime)do
+  begin
+    status('Threshold: '+msToTime(threshold-getSystemTime, TIME_SHORT)+
+      ' - Memories: ' + toStr(countMemories)+
+      ' - inv timer: '+msToTime(t-getSystemTime, TIME_SHORT));
     wait(randomRange(100, 500));
-  result := countMemories < 1;
+    if tabBackpack.count <> inv then
+    begin
+      t := getSystemTime + randomRange(5000, 7000);
+      inv := tabBackpack.count;
+    end;
+  end;
+  result := tabBackpack.count < 28;
   if result then wait(randomRange(200, 500));
 end;
 
@@ -314,7 +469,7 @@ function openRift: boolean;
 var
   threshold: integer;
   MM_rift: TPoint;
-  riftMSTPA: TPointArray;
+  rift_ATPA: T2DPointArray;
   i: integer;
 begin
   threshold := getSystemTime + randomRange(55000, 75000);
@@ -322,11 +477,17 @@ begin
   begin
     if riftOpen then exit(true);
     wait(randomRange(200, 400));
-    riftMSTPA := riftMS;
-    if length(riftMSTPA) < 1 then if not moveToRift then continue;
-    for i := 0 to high(riftMSTPA) do
+    rift_ATPA := riftMS;
+    if length(rift_ATPA) < 1 then
     begin
-      mouse(riftMSTPA[i], Mouse_right, Mouse_Human);
+      moveToRift;
+      wait(randomRange(100, 1000));
+      continue;
+    end;
+    setLength(rift_ATPA, Min(high(rift_ATPA), randomRange(3, 6)));
+    for i := 0 to high(rift_ATPA) do
+    begin
+      mouse(rift_ATPA[i].centerPoint, Mouse_right, Mouse_Human);
       result := chooseOption.select(['Convert memories', 'memories En'], randomRange(3500,4500));
       if result then exit;
     end;
@@ -336,7 +497,7 @@ end;
 
 function convertMemories: boolean;
 var
-  threshold, i: integer;
+  threshold, i, eM, m: integer;
 begin
   countMemories(eMemoriesCon, memoriesCon);
   if openRift then
@@ -354,7 +515,13 @@ begin
     end;
     if (threshold > getSystemTime) and (not riftOpen) then
       result := waitWhileConverting;
-    if result then printProgress;
+    if result then
+    begin
+      countMemories(eM, m);
+      eMemoriesCon := eMemoriesCon - eM;
+      memoriesCon := memoriesCon - m;
+      printProgress;
+    end;
   end;
   memoriesCon := 0;
   eMemoriesCon := 0;

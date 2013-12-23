@@ -3,7 +3,7 @@
 type
   TRS_divAIOInfo = record
     map_name, wisp_name: string;
-    wisp_color, _wXP, _ewXP: integer;
+    wisp_color, rift_color, _wXP, _ewXP: integer;
     _eXP, _mXP: array [1..3] of extended;
     rift_point: TPoint;
     POIs: TPointArray;
@@ -30,6 +30,7 @@ begin
   begin
     map_name := 'pale_wisps';
     wisp_name := 'Pale';
+    rift_color := 16535488;
     wisp_color := 8948320;
     rift_point := [186, 162];
     POIs := [[166,	136], [167,	189], [196,	182]];
@@ -46,6 +47,7 @@ begin
   begin
     map_name := 'flickering_wisps';
     wisp_name := 'Flickering';
+    rift_color := 8782912;
     wisp_color := 8689518;
     rift_point := [165, 167];
     POIs := [[168, 142], [144, 149], [145, 126]];
@@ -62,6 +64,7 @@ begin
   begin
     map_name := 'bright_wisps';
     wisp_name := 'Bright';
+    rift_color := 16649903;
     wisp_color := 14271127;
     rift_point := [112,	218];
     POIs := [[97,	234], [88,	199], [112,	195]];
@@ -78,6 +81,7 @@ begin
   begin
     map_name := 'glowing_wisps';
     wisp_name := 'Glowing';
+    rift_color := 8782912;
     wisp_color := 10921347;
     rift_point := [172, 167];
     POIs := [[155, 165], [201, 154], [214, 138]];
@@ -94,6 +98,7 @@ begin
   begin
     map_name := 'sparkling_wisps';
     wisp_name := 'Sparkling';
+    rift_color := 0;
     wisp_color := 10066032;
     rift_point := [175, 158];
     POIs := [[175, 192], [198, 190], [192, 167]];
@@ -110,6 +115,7 @@ begin
   begin
     map_name := 'gleaming_wisps';
     wisp_name := 'Gleaming';
+    rift_color := 2655657;
     wisp_color := 7828034;
     rift_point := [148,	156];
     POIs := [[121, 153], [101, 121], [119, 110]];
@@ -126,6 +132,7 @@ begin
   begin
     map_name := 'vibrant_wisps';
     wisp_name := 'Vibrant';
+    rift_color := 2591146;
     wisp_color := 12169852;
     rift_point := [164, 141];
     POIs := [[133, 137], [160, 168], [196, 146]];
@@ -142,6 +149,7 @@ begin
   begin
     map_name := 'lustrous_wisps';
     wisp_name := 'Lustrous';
+    rift_color := 2394284;
     wisp_color := 12169852;
     rift_point := [171,	144];
     POIs := [[180, 172], [148, 179], [135, 142]];
@@ -158,6 +166,7 @@ begin
   begin
     map_name := 'brilliant_wisps';
     wisp_name := 'Brilliant';
+    rift_color := 11276136;
     wisp_color := 10391630;
     rift_point := [131,	207];
     POIs := [[106, 184], [115, 170], [107, 149]];
@@ -174,6 +183,7 @@ begin
   begin
     map_name := 'radiant_wisps';
     wisp_name := 'Radiant';
+    rift_color := 0;
     rift_point := [136, 144];
     POIs := [[119, 125], [153, 116], [170, 134]];
     wisp_color := 0;
@@ -190,6 +200,7 @@ begin
   begin
     map_name := 'luminous_wisps';
     wisp_name := 'Luminous';
+    rift_color := 0;
     rift_point := [195, 153];
     POIs := [[167, 172], [168, 131], [193, 123]];
     wisp_color := 0;
@@ -207,6 +218,7 @@ begin
     map_name := 'incandescent_wisps';
     wisp_name := 'Incandescent';
     rift_point := [106, 171];
+    rift_color := 0;
     POIs := [[123, 148], [86, 129], [73, 118]];
     wisp_color := 0;
     _mXP[1] := 1;
