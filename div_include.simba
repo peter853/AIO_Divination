@@ -1,5 +1,5 @@
 {$include_once SRL-6/SRL.simba}
-{$include_once sps/sps-rs3.simba}
+{$include_once sps/lib/sps-rs3.simba}
 type
   TRS_divAIOInfo = record
     map_name, wisp_name: string;
