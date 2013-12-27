@@ -25,6 +25,13 @@ var
   _PLAYER_POS_GLOBAL: TPoint;
   _PLAYER_POS_TIMER: integer;
 
+const
+  ANTIBAN_BREIF = 1500;
+  ANTIBAN_SHORT = 3000;
+  ANTIBAN_MED   = 6300;
+  ANTIBAN_LONG  = 1000;
+
+
 procedure TRS_divAIOInfoArray.__init();
 begin
   setLength(self, 12);
@@ -291,45 +298,45 @@ begin
   _PLAYER_POS_TIMER := getSystemTime;
 end;
 
-procedure TSPSArea.setupCustom(imgName: string);
+procedure TSPSArea.setup(imgName, imgFolder: string; accuracy: integer; tolerance, minMatchPercent: extended); override;
 var
-  tmb: TMufasaBitmap;
-  path: string;
+  bmp: TMufasaBitmap;
+  t: integer;
+  m: extended;
 begin
+  print(self.getName()+'.init()', TDebug.HEADER);
 
-  print('TSPSArea.init()', TDebug.HEADER);
+  t := getSystemTime();
 
-  path := 'maps\' + imgName + '.png';
-
-  if not(fileExists(path)) then
+  if (fileExists(imgFolder + imgName+'.png')) then
   begin
-    print('Invalid map path...');
-    terminateScript;
-  end;
+    print('Path exists ('+imgFolder + imgName+'.png)');
 
-  self._accuracy := __DEFAULT_ACCURACY;
-  self._tolerance := __DEFAULT_TOLERANCE;
-  self._minMatchPercent := 0.5;
-  self.__mapPath := path;
+    self._accuracy := accuracy;
+    self._tolerance := tolerance;
+    self._minMatchPercent := minMatchPercent;
+    self.__mapPath := imgFolder + imgName + '.png';
 
-  if (spsAnyAngle) then
-    self._minMatchPercent := 0.10;
+    if (spsAnyAngle) then
+      self._minMatchPercent := 0.10;
 
-  try
-    tmb.init(client.getMBitmaps());
-    tmb.loadFromFile(self.__mapPath);
+    try
+      bmp.init(client.getMBitmaps());
+      bmp.loadFromFile(self.__mapPath);
 
-    SPS_BitmapToMap(tmb, self._accuracy, self.__areaMap);
-  except
-    print(self.getName()+'.setup(): Unable to load map or bitmap to map failed', TDebug.FATAL);
-  finally
-    tmb.free();
-  end;
+      SPS_BitmapToMap(bmp, self._accuracy, self.__areaMap);
+    except
+      print(self.getName()+'.setup(): Unable to load map or bitmap to map failed', TDebug.FATAL);
+    finally
+      bmp.free();
+    end;
 
-  self.isSetup := true;
+    self.isSetup := true;
+  end else
+    print(self.getName()+'.setup(): Unable to find map, searched path '+imgFolder + imgName+'.png', TDebug.FATAL);
 
-  print('Setup SPS area "' + imgName);
-  print('TSPSArea.init()', TDebug.FOOTER);
+  print('Setup area "' + imgName + '" in ' + intToStr(getSystemTime() - t) + 'ms');
+  print(self.getName()+'.init()', TDebug.FOOTER);
 end;
 
 procedure init_div_include(wisp: integer);
@@ -337,5 +344,12 @@ begin
   div_info_array.__init();
   div_info.div_AIOInfo := div_info_array[wisp];
   setLength(div_info_array, 0);
-  div_info.area_map.setupCustom(div_info.div_AIOInfo.map_name);;
+  div_info.area_map.setup(div_info.div_AIOInfo.map_name, 'maps\', __DEFAULT_ACCURACY, __DEFAULT_TOLERANCE,
+             __DEFAULT_MIN_MATCH_PERCENT);
+end;
+
+procedure antiBan(length: integer = ANTIBAN_SHORT)
+var
+  burn_time: integer := round(length*(gaussRangeExt(-1.3, 1.3)));
+begin
 end;
