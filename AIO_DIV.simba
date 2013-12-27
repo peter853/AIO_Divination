@@ -26,6 +26,7 @@ const
   SIPHON_INCANDESCENT_WISPS = 11;
 
   _debug = true;
+
 procedure declarePlayers;
 begin
   setLength(players, 1);
@@ -238,7 +239,7 @@ var
 begin
   threshold := getSystemTime + randomRange(200, 2000);
   result := tabBackpack.isFull;
-  while (threshold > getSystemTime) do
+  while (threshold > getSystemTime) and isloggedIn do
   begin
     wait(randomRange(200, 400));
     if tabBackpack.isFull then exit(true);
@@ -248,7 +249,8 @@ begin
     mouseSpeed := mouseSpeed + randomRange(5, 15);
     mouse(wisp, MOUSE_RIGHT, MOUSE_HUMAN);
     mouseSpeed := speedMouse;
-    if chooseOption.select(['Harvest '], randomRange(1500,3500)) then exit(true);
+    if chooseOption.isOpen(randomRange(800, 1500)) then
+      exit(chooseOption.select(['Harvest ']));
   end;
 end;
 
@@ -265,9 +267,9 @@ begin
   begin
     if (distance(mmCenter, riftMM) < 10) then exit(true);
     mouse(rift_point, MOUSE_LEFT);
-    if minimap.isFlagPresent(randomRange(2000, 3500)) then
+    if minimap.isPlayerMoving(randomRange(500, 800)) then
       if minimap.waitPlayerMoving() then
-        result := (distance(mmCenter, riftMM) < 10);
+        if (distance(mmCenter, riftMM) < 10) then exit(true);
   end;
   result := div_info.area_map.blindWalk(div_info.div_AIOInfo.rift_point);
 end;
@@ -307,12 +309,12 @@ begin
   threshold := getSystemTime + randomRange(3000,4000);
   invCount := tabBackpack.count;
   yellowCount := energyColorCount;
-  while threshold > getSystemTime do
+  while (threshold > getSystemTime) and isloggedIn do
   begin
     status('Threshold: '+msToTime(threshold-getSystemTime, TIME_SHORT)+
       ' - Inv Count: ' + toStr(invCount));
     if exitSiphon then exit;
-    wait(100);
+    antiBan();
     if (invCount <> tabBackpack.count) or (yellowCount <> energyColorCount) then
     begin
       threshold := getSystemTime + randomRange(1800,2800);
@@ -329,7 +331,7 @@ begin
   //Will attempt to collect memories for 4.5 - 9.5 minutes
   threshold := getSystemTime + randomRange(270000,570000);
   result := tabBackpack.isFull;
-  while (threshold > getSystemTime) and (not result) do
+  while (threshold > getSystemTime) and (not result) and isloggedIn do
   begin
     result := tabBackpack.isFull;
     if siphon then
@@ -428,12 +430,14 @@ var
   threshold: integer := getSystemTime + randomRange(45000,60000);
   t: integer := getSystemTime + randomRange(5000, 7000);
 begin
-  while (threshold > getSystemTime) and (countMemories > 0) and (t > getSystemTime)do
+  while (threshold > getSystemTime) and (countMemories > 0)
+    and (t > getSystemTime) and isloggedIn do
   begin
     status('Threshold: '+msToTime(threshold-getSystemTime, TIME_SHORT)+
       ' - Memories: ' + toStr(countMemories)+
       ' - inv timer: '+msToTime(t-getSystemTime, TIME_SHORT));
     wait(randomRange(100, 500));
+    antiBan(random(4));
     if tabBackpack.count <> inv then
     begin
       t := getSystemTime + randomRange(5000, 7000);
@@ -479,7 +483,7 @@ var
   rift_ATPA: T2DPointArray;
   i: integer;
 begin
-  while (threshold > getSystemTime) do
+  while (threshold > getSystemTime) and isloggedIn do
   begin
     if riftOpen then exit(true);
     rift_ATPA := riftMS;
@@ -516,7 +520,7 @@ begin
       while (threshold > getSystemTime) and riftOpen do
       begin
         convertOption(i);
-        wait(randomRange(400, 800));
+        wait(randomRange(800, 1200));
         inc(i);
       end;
     end;
