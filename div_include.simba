@@ -22,6 +22,8 @@ type
 var
   div_info_array: TRS_divAIOInfoArray;
   div_info: TRS_div_info;
+  _PLAYER_POS_GLOBAL: TPoint;
+  _PLAYER_POS_TIMER: integer;
 
 procedure TRS_divAIOInfoArray.__init();
 begin
@@ -232,40 +234,101 @@ begin
   end;
 end;
 
+function TSPSArea.getPlayerPos(): TPoint; override;
+var
+  t, foundMatches, bmpW, bmpH: integer;
+  bmpMinimap: TMufasaBitmap;
+  smallMap: T3DIntegerArray;
+  p: TPoint;
+  searches: extended;
+const
+  sleep_time = 250;
+begin
+  if (_PLAYER_POS_TIMER + sleep_time) > getSystemTime then
+    exit(_PLAYER_POS_GLOBAL);
+  result := [-1, -1];
+
+  if (not self.isSetup) then
+  begin
+    print('Unable to get players postion, sps isn''t setup', TDebug.ERROR);
+    exit();
+  end;
+
+  if (not isLoggedIn()) then
+    exit();
+
+  t := getSystemTime();
+
+  if (not spsAnyAngle) then
+  begin
+    if (inRange(minimap.getAngleDegrees(), 8, 352)) then
+      minimap.setAngle(MM_DIRECTION_NORTH);
+
+    bmpMinimap := SPS_GatherMinimap();
+  end else
+    bmpMinimap := SPS_GatherRotatedMinimap();
+
+  bmpW := bmpMinimap.getWidth();
+  bmpH := bmpMinimap.getHeight();
+
+  SPS_BitmapToMap(bmpMinimap, self._accuracy, smallMap);
+
+  foundMatches := SPS_FindMapInMap(p.x, p.y, self.__areaMap, smallMap, self._tolerance);
+  searches := ((bmpW / self._accuracy) * (bmpH / self._accuracy));
+
+  bmpMinimap.free();
+
+  if ((foundMatches / searches) > self._minMatchPercent) then
+  begin
+    result.x := (p.x * self._accuracy + (bmpW div 2));
+    result.y := (p.y * self._accuracy + (bmpW div 2));
+    _PLAYER_POS_GLOBAL := result;
+  end else
+    print(self.getName()+'.getPlayerPos(): Didn''t find enough matches accurately calc your postion', TDebug.WARNING);
+
+  print(self.getName()+'.getPlayerPos(): result = ' + toStr(result) + ' took ' + intToStr(getSystemTime() - t) + ' ms');
+  print('Time since last .getPlayerPos() call: ' + toStr(getSystemTime-_PLAYER_POS_TIMER));
+  _PLAYER_POS_TIMER := getSystemTime;
+end;
+
 procedure TSPSArea.setupCustom(imgName: string);
 var
   tmb: TMufasaBitmap;
   path: string;
-  t: integer;
 begin
-  t := getSystemTime();
 
   print('TSPSArea.init()', TDebug.HEADER);
 
   path := 'maps\' + imgName + '.png';
 
+  if not(fileExists(path)) then
+  begin
+    print('Invalid map path...');
+    terminateScript;
+  end;
+
   self._accuracy := __DEFAULT_ACCURACY;
   self._tolerance := __DEFAULT_TOLERANCE;
+  self._minMatchPercent := 0.5;
   self.__mapPath := path;
 
   if (spsAnyAngle) then
-    self._minMatchPercent := 0.10 // why? when rotated the bitmap gets bigger with alot of black around it, this will give a low match percentage if left high.
-  else
-    self._minMatchPercent := 0.7;
+    self._minMatchPercent := 0.10;
 
-  print('Using path "' + self.__mapPath + '"');
+  try
+    tmb.init(client.getMBitmaps());
+    tmb.loadFromFile(self.__mapPath);
 
-  if (not fileExists(self.__mapPath)) then
-    print('SPS - Unable to find map image', TDebug.FATAL);
+    SPS_BitmapToMap(tmb, self._accuracy, self.__areaMap);
+  except
+    print(self.getName()+'.setup(): Unable to load map or bitmap to map failed', TDebug.FATAL);
+  finally
+    tmb.free();
+  end;
 
-  tmb.init(client.getMBitmaps());
-	tmb.loadFromFile(self.__mapPath);
+  self.isSetup := true;
 
-  SPS_BitmapToMap(tmb, self._accuracy, self.__areaMap);
-
-  tmb.free();
-
-  print('Setup SPS area "' + imgName + '" in ' + intToStr(getSystemTime() - t) + 'ms');
+  print('Setup SPS area "' + imgName);
   print('TSPSArea.init()', TDebug.FOOTER);
 end;
 
