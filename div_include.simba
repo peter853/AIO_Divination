@@ -244,11 +244,11 @@ end;
 
 function TSPSArea.getPlayerPos(): TPoint; override;
 var
-  t, foundMatches, bmpW, bmpH: integer;
-  bmpMinimap: TMufasaBitmap;
-  smallMap: T3DIntegerArray;
+  foundMatches, wid, hei, t: integer;
+  bmp: TMufasaBitmap;
+  map: T3DIntegerArray;
   p: TPoint;
-  searches: extended;
+  searches, a: extended;
 const
   sleep_time = 250;
 begin
@@ -256,46 +256,50 @@ begin
     exit(_PLAYER_POS_GLOBAL);
   result := [-1, -1];
 
+  if (not isLoggedIn()) then
+    exit();
+
   if (not self.isSetup) then
   begin
     print('Unable to get players postion, sps isn''t setup', TDebug.ERROR);
     exit();
   end;
 
-  if (not isLoggedIn()) then
-    exit();
-
   t := getSystemTime();
+  a := minimap.getAngleDegrees();
 
-  if (not spsAnyAngle) then
+  if (inRange(a, 10.0, 350.0)) and (not spsAnyAngle) then
   begin
-    if (inRange(minimap.getAngleDegrees(), 8, 352)) then
-      minimap.setAngle(MM_DIRECTION_NORTH);
+    print(self.getName()+'.getPlayerPos(): Angle is at '+floatToStr(a)+', Setting angle to 0 degrees');
+    minimap.clickCompass();
+    mainScreen.setAngle(MS_ANGLE_HIGH);
+  end;
 
-    bmpMinimap := SPS_GatherMinimap();
-  end else
-    bmpMinimap := SPS_GatherRotatedMinimap();
+  bmp := SPS_GatherMinimap(spsAnyAngle, a);
 
-  bmpW := bmpMinimap.getWidth();
-  bmpH := bmpMinimap.getHeight();
+  wid := bmp.getWidth();
+  hei := bmp.getHeight();
 
-  SPS_BitmapToMap(bmpMinimap, self._accuracy, smallMap);
+  SPS_BitmapToMap(bmp, self._accuracy, map);
 
-  foundMatches := SPS_FindMapInMap(p.x, p.y, self.__areaMap, smallMap, self._tolerance);
-  searches := ((bmpW / self._accuracy) * (bmpH / self._accuracy));
-
-  bmpMinimap.free();
-
-  if ((foundMatches / searches) > self._minMatchPercent) then
+  if (length(map) > 0) then
   begin
-    result.x := (p.x * self._accuracy + (bmpW div 2));
-    result.y := (p.y * self._accuracy + (bmpW div 2));
-    _PLAYER_POS_GLOBAL := result;
-    _PLAYER_POS_TIMER := getSystemTime;
-  end else
-    print(self.getName()+'.getPlayerPos(): Didn''t find enough matches accurately calc your postion', TDebug.WARNING);
+    foundMatches := SPS_FindMapInMap(p.x, p.y, self.__areaMap, map, self._tolerance);
+    searches := ((wid / self._accuracy) * (hei / self._accuracy));
 
-  print(self.getName()+'.getPlayerPos(): result = ' + toStr(result) + ' took ' + intToStr(getSystemTime() - t) + ' ms');
+    if ((foundMatches / searches) > self._minMatchPercent) then
+    begin
+      result.x := (p.x * self._accuracy + (wid div 2));
+      result.y := (p.y * self._accuracy + (wid div 2));
+      _PLAYER_POS_GLOBAL := result;
+      _PLAYER_POS_TIMER := getSystemTime;
+    end else
+      print(self.getName()+'.getPlayerPos(): Didn''t find enough matches accurately calc your postion', TDebug.WARNING);
+  end;
+
+  bmp.free();
+
+  print(self.getName()+'.getPlayerPos(): result = ' + toStr(result) + ', took ' + intToStr(getSystemTime() - t) + ' ms');
 end;
 
 procedure TSPSArea.setup(imgName, imgFolder: string; accuracy: integer; tolerance, minMatchPercent: extended); override;
