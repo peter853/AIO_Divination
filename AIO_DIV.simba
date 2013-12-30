@@ -560,6 +560,7 @@ end;
 begin
   smartEnableDrawing := true;
   setupSRL;
+  spsAnyAngle := true;
   declarePlayers;
   initInfo;
   while players.getActive > 0 do mainLoop;

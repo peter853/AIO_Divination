@@ -291,12 +291,11 @@ begin
     result.x := (p.x * self._accuracy + (bmpW div 2));
     result.y := (p.y * self._accuracy + (bmpW div 2));
     _PLAYER_POS_GLOBAL := result;
+    _PLAYER_POS_TIMER := getSystemTime;
   end else
     print(self.getName()+'.getPlayerPos(): Didn''t find enough matches accurately calc your postion', TDebug.WARNING);
 
   print(self.getName()+'.getPlayerPos(): result = ' + toStr(result) + ' took ' + intToStr(getSystemTime() - t) + ' ms');
-  print('Time since last .getPlayerPos() call: ' + toStr(getSystemTime-_PLAYER_POS_TIMER));
-  _PLAYER_POS_TIMER := getSystemTime;
 end;
 
 procedure TSPSArea.setup(imgName, imgFolder: string; accuracy: integer; tolerance, minMatchPercent: extended); override;
