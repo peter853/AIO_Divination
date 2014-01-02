@@ -1,5 +1,5 @@
-{$include_once SRL-6/SRL.simba}
-{$include_once sps/lib/sps-rs3.simba}
+//{$include_once SRL-6/SRL.simba}
+//{$include_once sps/lib/sps-rs3.simba}
 type
   TRS_divAIOInfo = record
     map_name, wisp_name: string;
@@ -250,9 +250,9 @@ var
   p: TPoint;
   searches, a: extended;
 const
-  sleep_time = 250;
+  sleep_time = 200;
 begin
-  if (_PLAYER_POS_TIMER + sleep_time) > getSystemTime then
+  if ((_PLAYER_POS_TIMER + sleep_time) > getSystemTime) then
     exit(_PLAYER_POS_GLOBAL);
   result := [-1, -1];
 
@@ -268,7 +268,7 @@ begin
   t := getSystemTime();
   a := minimap.getAngleDegrees();
 
-  if (inRange(a, 10.0, 350.0)) and (not spsAnyAngle) then
+  if (inRange(a, 13.0, 347.0)) then
   begin
     print(self.getName()+'.getPlayerPos(): Angle is at '+floatToStr(a)+', Setting angle to 0 degrees');
     minimap.clickCompass();
@@ -308,6 +308,7 @@ var
   t: integer;
   m: extended;
 begin
+  print('Start custom SPS setup.');
   print(self.getName()+'.init()', TDebug.HEADER);
 
   t := getSystemTime();
@@ -320,9 +321,6 @@ begin
     self._tolerance := tolerance;
     self._minMatchPercent := minMatchPercent;
     self.__mapPath := imgFolder + imgName + '.png';
-
-    if (spsAnyAngle) then
-      self._minMatchPercent := 0.10;
 
     try
       bmp.init(client.getMBitmaps());
@@ -341,19 +339,7 @@ begin
 
   print('Setup area "' + imgName + '" in ' + intToStr(getSystemTime() - t) + 'ms');
   print(self.getName()+'.init()', TDebug.FOOTER);
-end;
-
-procedure init_div_include(wisp: integer);
-begin
-  a1_t := getSystemTime + randomRange(0, 30000);//10-30 seconds
-  a2_t := getSystemTime + randomRange(0, 600000);//3-10 minutes
-  a3_t := getSystemTime + randomRange(0, 1200000);//15-20 minutes
-  a4_t := getSystemTime + randomRange(0, 2400000);//20-40 minutes
-  div_info_array.__init();
-  div_info.div_AIOInfo := div_info_array[wisp];
-  setLength(div_info_array, 0);
-  div_info.area_map.setup(div_info.div_AIOInfo.map_name, 'maps\', __DEFAULT_ACCURACY, __DEFAULT_TOLERANCE,
-             __DEFAULT_MIN_MATCH_PERCENT);
+  print('End custom SPS setup.');
 end;
 
 procedure _brief_antiban;
@@ -427,4 +413,18 @@ begin
     ANTIBAN_LONG: _long_antiban;
     else exit;
   end;
+end;
+
+
+procedure init_div_include(wisp: integer);
+begin
+  a1_t := getSystemTime + randomRange(0, 30000);//10-30 seconds
+  a2_t := getSystemTime + randomRange(0, 600000);//3-10 minutes
+  a3_t := getSystemTime + randomRange(0, 1200000);//15-20 minutes
+  a4_t := getSystemTime + randomRange(0, 2400000);//20-40 minutes
+  div_info_array.__init();
+  div_info.div_AIOInfo := div_info_array[wisp];
+  setLength(div_info_array, 0);
+  div_info.area_map.setup(div_info.div_AIOInfo.map_name, 'maps\', 6, 550.0,
+             0.4);
 end;

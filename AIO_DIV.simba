@@ -294,11 +294,12 @@ begin
   if tabBackpack.isFull then exit(true);
   if findSpinTicket(spinPoint) then
       mouse(spinPoint.rand(rn(4)), Mouse_Left, Mouse_Human);
+  wait(100);
   if tabBackpack.isFull then exit(true);
-  wait(randomRange(50, 100));
+  wait(100);
   if tabBackpack.isFull then exit(true);
   exitSquealOfFortune;
-  wait(randomRange(50, 100));
+  wait(100);
   result := tabBackpack.isFull;
 end;
 
@@ -345,23 +346,19 @@ begin
   end;
 end;
 
-procedure convertOption(i: integer = 0);
+procedure convertOption();
 var
   box1: TBOX := [140, 167, 207, 233];
   box2: TBOX := [247, 164, 314, 234];
   box3: TBOX := [358, 167, 425, 233];
 begin
-  if (i = 0) then
-    typeSend(toString(players[CurrentPlayer].integers[0]), false)
-  else begin
-    case players[CurrentPlayer].integers[0] of
-      1: mouseBox(box1, MOUSE_Left);
-      2: mouseBox(box2, MOUSE_Left);
-      3: mouseBox(box3, MOUSE_Left);
-      else begin
-        print('Invalid conversion option.'+ toStr(players[CurrentPlayer].integers[0]));
-        TerminateScript;
-      end;
+  case players[CurrentPlayer].integers[0] of
+    1: mouseBox(box1, MOUSE_Left);
+    2: mouseBox(box2, MOUSE_Left);
+    3: mouseBox(box3, MOUSE_Left);
+    else begin
+      print('Invalid conversion option.'+ toStr(players[CurrentPlayer].integers[0]));
+      TerminateScript;
     end;
   end;
 end;
@@ -508,20 +505,22 @@ end;
 
 function convertMemories: boolean;
 var
-  threshold, i, eM, m: integer;
+  threshold, i, eM, m, tries: integer;
 begin
   countMemories(eMemoriesCon, memoriesCon);
   if openRift then
   begin
     if wait2Convert then
     begin
-      wait(randomRange(50,200));
+      wait(randomRange(0,50));
       threshold := getSystemTime + randomRange(6000,8000);
-      while (threshold > getSystemTime) and riftOpen do
+      tries := randomRange(3, 5);
+      for i := 0 to tries do
       begin
-        convertOption(i);
-        wait(randomRange(800, 1200));
-        inc(i);
+        if (not riftOpen) then break;
+        convertOption;
+        threshold := getSystemTime + randomRange(2000,4000);
+        while (threshold > getSystemTime) and (riftOpen) do wait(50);
       end;
     end;
     if (threshold > getSystemTime) and (not riftOpen) then
