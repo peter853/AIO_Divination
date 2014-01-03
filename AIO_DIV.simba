@@ -6,9 +6,11 @@ program AIO_Divination;
 
 var
   memoriesCon, eMemoriesCon, totalMem, totalEMem, cMod, rift_colorEX: integer;
+  _CLOSE_HOME_TELEPORT, _CLOSE_SETTINGS, _CLOSE_INTERFACE: integer;
   mmCenter: TPoint;
   msBounds, mmBounds: TBox;
   wisp_TPA: TPointArray;
+  _xClose: TIntegerArray;
 
 
 const
@@ -26,6 +28,7 @@ const
   SIPHON_INCANDESCENT_WISPS = 11;
 
   _debug = true;
+  _pretty_paint = true;//Use the large image for proggy?
 
 procedure declarePlayers;
 begin
@@ -46,6 +49,16 @@ end;
 
 procedure initInfo;
 begin
+  _CLOSE_HOME_TELEPORT := BitmapFromString(7, 7, 'meJzLvfkvcNFdBhgAsnNv/nOedSfm' +
+        '9E8gCRRBY/sf+A1BEBEIsN7w1WL/NyAJF5FrvqG79icEAdlAEeHqa' +
+        '3LLf6OxBef/ArLhuoBsoAgArLU6Sw==');
+  _CLOSE_SETTINGS := BitmapFromString(9, 9, 'meJxLuvQ3avdHBlQAFEm69Nd/K4hE' +
+        'loWIQ0SAslGn/gFJNDYEANke+/5CELI4BAAFTbf8AZJo4mpz3gLFI' +
+        'QjIRhZXXfUbIoLMFup8LTHzCxDBVUK4QHGOvh9AEs18iDgAMsBT8w==');
+  _CLOSE_INTERFACE := BitmapFromString(10, 10, 'meJxzWvrcaelzBgzgBBaHI6xSEL' +
+        'bfzh9wBWhcZBFMKWQFWKXQnIEmJT3pPRrClMLkcueeRlMMVwCUgiB' +
+        'MZ0DEAaBoWJ0=');
+  _xClose := [_CLOSE_HOME_TELEPORT, _CLOSE_SETTINGS, _CLOSE_INTERFACE];
   msBounds := mainscreen.getBounds;
   mmBounds := minimap.getBounds;
   mmCenter := minimap.getCenterPoint;
@@ -61,6 +74,21 @@ begin
   tmpArray := self;
   tmpArray.sortFromPoint(self.getMiddle);
   result := tmpArray[0];
+end;
+
+procedure closeX;
+var
+  i, x, y: integer;
+  b: TBox := getClientBounds;
+begin
+  for i := 0 to 2 do
+  begin
+    if findBitmapIn(_xClose[i], x, y, b) then
+    begin
+      mouse(point(x+random(5), y+random(5)), MOUSE_LEFT, MOUSE_HUMAN);
+      wait(randomRange(200, 400));
+    end;
+  end;
 end;
 
 function rn(rand: integer = 0): integer;
@@ -205,6 +233,7 @@ var
   lBoxes: TBoxArray;
   i, h: integer;
 begin
+  closeX();
   if not findColorsTolerance(lTPA, 12305048, mainscreen.getBounds, 13, colorSetting(2, 0.95, 1.72)) then exit;
   if not findColorsTolerance(dTPA, 12305048, mainscreen.getBounds, 18, colorSetting(2, 0.27, 0.71)) then exit;
   if (div_info.div_AIOInfo.rift_color <> 0) then filterRiftMS(lTPA, dTPA);
@@ -291,14 +320,12 @@ function exitSiphon: boolean
 var
   spinPoint: TPoint;
 begin
+  closeX();
   if tabBackpack.isFull then exit(true);
   if findSpinTicket(spinPoint) then
       mouse(spinPoint.rand(rn(4)), Mouse_Left, Mouse_Human);
   wait(100);
   if tabBackpack.isFull then exit(true);
-  wait(100);
-  if tabBackpack.isFull then exit(true);
-  exitSquealOfFortune;
   wait(100);
   result := tabBackpack.isFull;
 end;
@@ -440,9 +467,23 @@ begin
       t := getSystemTime + randomRange(5000, 7000);
       inv := tabBackpack.count;
     end;
+    closeX();
   end;
   result := tabBackpack.count < 28;
   if result then wait(randomRange(200, 500));
+end;
+
+procedure clearProggy;
+var
+  b: TBox;
+  i: integer;
+begin
+  b := [241, 387, 361, 398];
+  for i := 0 to 3 do
+  begin
+    smartImage.drawBox(b, true, 1);
+    b.edit(0, 17, 0, 17);
+  end;
 end;
 
 procedure printProgress;
@@ -463,14 +504,12 @@ begin
   secondsElapsed := (getTimeRunning/1000);
   expPHour := (totalEXP * 60 * 60) / secondsElapsed;
 
-  smartImage.clearArea(IntToBox(400, 515, 555, 578));
-  smartImage.drawBox(IntToBox(400, 515, 555, 578), true, clOrange);
-  smartImage.DrawText('Run Time: ' + msToTime(GetTimeRunning, TIME_SHORT), Point(400, 515), upchars, false, 2102790);
-  smartImage.DrawText('EXP/Hour: ' + toString(round(expPHour)), Point(400, 525), upchars, false, 2102790);
-  smartImage.DrawText('Total EXP: ' + toString(totalEXP), Point(400, 535), upchars, false, 2102790);
-  smartImage.DrawText('Enriched Memories: ' + toString(totalEMem), Point(400, 545), upchars, false, 2102790);
-  smartImage.DrawText('Regular Memories: '+toString(totalMem), Point(400, 555), upchars, false, 2102790);
-  smartImage.DrawText('Harvesting '+ div_info.div_AIOInfo.wisp_name + ' wisps ', Point(400, 565), upchars, false, 2102790);
+  clearProggy;
+
+  smartImage.DrawText(msToTime(GetTimeRunning, TIME_SHORT), Point(241, 386), upchars, false, 15653736);
+  smartImage.DrawText(toString(totalEXP) + '[' +  toString(round(expPHour)) + ']', Point(241, 403), upchars, false, 15653736);
+  smartImage.DrawText(toString(totalEMem + totalMem) + '[' +  toString(totalEMem) + ']', Point(241, 420), upchars, false, 15653736);
+  smartImage.DrawText('N/A', Point(241, 438), upchars, false, 15103);
 end;
 
 function openRift: boolean;
@@ -532,28 +571,37 @@ begin
       memoriesCon := memoriesCon - m;
       printProgress;
     end;
-  end;
+  end else closeX();
   memoriesCon := 0;
   eMemoriesCon := 0;
 end;
 
 procedure mainLoop;
 begin
-  if (not isLoggedIn) and players[currentPlayer].isActive then
+  if (not isLoggedIn) then
   begin
-    if players[currentPlayer].login then
+    if (players[currentPlayer].isActive and players[currentPlayer].login) then
     begin
       wait(randomRange(50, 2000));
       minimap.clickCompass;
       wait(randomRange(50, 2000));
       mainscreen.setAngle(MS_ANGLE_HIGH);
       wait(randomRange(10, 2000));
+      exitSquealOfFortune;
     end else if (players.getActive < 1) then terminateScript;
-  end;
+  end else exitSquealOfFortune;
 
   if not collectMemories then exit;
   if not convertMemories then exit;
   wait(randomRange(100,200));
+  exitSquealOfFortune;
+end;
+
+function paintGfx: boolean;
+begin
+
+  if _pretty_paint and fileExists('gfx_by_yoshi.bmp') then
+    exit(smartImage.drawBitmap('gfx_by_yoshi.bmp', Point(0, 344)));
 end;
 
 begin
@@ -562,5 +610,7 @@ begin
   spsAnyAngle := true;
   declarePlayers;
   initInfo;
+  paintGfx;
+  clearProggy;
   while players.getActive > 0 do mainLoop;
 end.

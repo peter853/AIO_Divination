@@ -1,5 +1,5 @@
-//{$include_once SRL-6/SRL.simba}
-//{$include_once sps/lib/sps-rs3.simba}
+{$include_once SRL-6/SRL.simba}
+{$include_once sps/lib/sps-rs3.simba}
 type
   TRS_divAIOInfo = record
     map_name, wisp_name: string;
@@ -178,8 +178,8 @@ begin
     wisp_name := 'Brilliant';
     rift_color := 11276136;
     wisp_color := 10391630;
-    rift_point := [131,	207];
-    POIs := [[106, 184], [115, 170], [107, 149]];
+    rift_point := [153, 224];
+    POIs := [[123, 197], [121,169], [141, 159]];
     _mXP[1] := 1;
     _mXP[2] := 35;
     _mXP[3] := 43.7;
@@ -414,7 +414,6 @@ begin
     else exit;
   end;
 end;
-
 
 procedure init_div_include(wisp: integer);
 begin
