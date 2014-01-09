@@ -1,0 +1,46 @@
+pale memory:
+r: 
+e: 
+
+flickering memory:
+r: 
+e: 
+
+bring memory:
+r: 
+e: 
+
+glowing memory:
+r: 
+e: 
+
+sparkling memory:
+r: 
+e: 
+
+gleaming memory:
+r: 
+e: 
+
+vibrant memory:
+r: 
+e: 
+
+brilliant memory:
+r: 
+e: 
+
+lustrous memory:
+r: 
+e: 
+
+radiant memory:
+r: 
+e: 
+
+luminous memory:
+r: 
+e: 
+incandescent memory:
+r: 
+e: 

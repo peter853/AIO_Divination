@@ -1,1 +1,1 @@
-This script is for botting the divination skill in Runescape using Simba and SMART.
+This script is for botting the divination skill in RuneScape using SIMBA and SMART.

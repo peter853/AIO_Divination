@@ -3,6 +3,7 @@ program AIO_Divination;
 {$I SRL-6/SRL.simba}
 {$I sps/lib/sps-rs3.simba}
 {$I div_include.simba}
+{$I item_db.simba}
 
 var
   memoriesCon, eMemoriesCon, totalMem, totalEMem, cMod, rift_colorEX: integer;
@@ -11,7 +12,8 @@ var
   msBounds, mmBounds: TBox;
   wisp_TPA: TPointArray;
   _xClose: TIntegerArray;
-
+  memory, memory2: TRSItem;
+  memories: TRSItemArray;
 
 const
   SIPHON_PALE_WISPS = 0;
@@ -604,6 +606,30 @@ begin
     exit(smartImage.drawBitmap('gfx_by_yoshi.bmp', Point(0, 344)));
 end;
 
+function uniqueItems: integer;
+var
+  items, unqItems: TRSItemArray;
+  item: TRSItem;
+  i, h, j: integer;
+begin
+  items.getItemInfo(tabBackpack.getSlotBoxes);
+  h := high(items);
+  for i := 0 to h do
+  begin
+    item := items[i];
+    if length(unqItems) < 1 then insert(item, unqItems);
+    for j := 0 to high(unqItems) do
+    begin
+      if (item.equals(unqItems[j])) then break else
+        if j = high(unqItems) then insert(item, unqItems);
+    end;
+  end;
+  result := length(unqItems);
+end;
+
+var
+  t, z: integer;
+
 begin
   smartEnableDrawing := true;
   setupSRL;
@@ -612,5 +638,11 @@ begin
   initInfo;
   paintGfx;
   clearProggy;
+  t := getSystemTime;
+  memories.getItemInfo(tabBackpack.getSlotBoxes);
+  z := uniqueItems;
+  t := getSystemTime-t;
+  writeln('that took: '+toStr(t));
+  writeln(z);
   while players.getActive > 0 do mainLoop;
 end.

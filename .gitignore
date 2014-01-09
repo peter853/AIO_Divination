@@ -2,6 +2,10 @@
 ## Eclipse
 #################
 
+#My personal file ignore list
+resources/
+SMART.*
+
 *.pydevproject
 .project
 .metadata

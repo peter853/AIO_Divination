@@ -1,0 +1,87 @@
+{
+this is an item database include
+}
+{$include_once SRL-6/SRL.simba}
+type
+  TRSItem = record
+    name: string;
+    bCount, w, h: integer;
+    tpa: TPointArray;
+  end;
+
+  TRSItemArray = array of TRSItem;
+
+function RSItem(name: string; bCount, w, h: integer; tpa: TPointArray): TRSItem;
+begin
+  result.name := name;
+  result.bCount := bCount;
+  result.w := w;
+  result.h := h;
+  result.tpa := tpa;
+end;
+
+procedure TRSItem.setInfo(item: TRSItem);
+begin
+  self := item;
+end;
+
+function getNameFromTOptions(options: __TOptionArray): string;
+var
+  i, h_min, h_max: integer;
+begin
+  if (length(options) < 2) then exit();
+  h_min := min(high(options[0],options[1]));
+  h_max := max(
+  for i := 0 to h do
+  begin
+
+  end;
+end;
+
+function TRSItem.getItemInfo(bounds: TBox; get_name: boolean = false): boolean;
+var
+  tpaz: TPointArray;
+  tpab: TBox;
+  p, p2: TPoint;
+  options: __TOptionArray;
+  item_text: string;
+begin
+  if findColors(tpaz, ITEM_OUTLINE_BLACK, bounds) then
+  begin
+    result := true;
+    p2 := tpaz.getMiddle;
+    tpab := tpaz.getBounds;
+    p := [tpaz[low(tpaz)].x*-1, tpaz[low(tpaz)].y*-1];
+    tpaz.offSet(p);
+    mouse(p2.gaussRange(-4, 4), MOUSE_RIGHT, MOUSE_HUMAN);
+    if chooseOption.isOpen(randomRange(2000, 3000)) then
+    begin
+      options := chooseOption.__getOptions;
+      chooseOption.close();
+      item_text := getNameFromTOptions(options);
+    end;
+    self.setInfo(RSItem(item_text, length(tpaz), tpab.getWidth, tpab.getHeight, tpaz));
+  end;
+end;
+
+function TRSItem.equals(item: TRSItem): boolean;
+begin
+  result := (self.name = item.name) and (self.bCount = item.bCount) and
+    (self.w = item.w) and (self.h = item.h) and (self.tpa.equals(item.tpa));
+end;
+
+function TRSItem.toString: TStringArray;
+begin
+  result := [self.name, 'black count: ' + toStr(self.bCount), 'w: '+toStr(self.w), 'h: '+toStr(self.h), toStr(self.tpa)];
+end;
+
+function TRSItemArray.getItemInfo(bounds: TBoxArray; get_name: boolean = false): boolean;
+var
+  h: integer := high(bounds);
+  i: integer;
+  item: TRSItem;
+begin
+  for i := 0 to h do
+    if item.getItemInfo(bounds[i], get_name) then insert(item, self);
+  result := length(self) > 0;
+end;
