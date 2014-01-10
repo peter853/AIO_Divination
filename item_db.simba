@@ -1,7 +1,43 @@
+{$DEFINE SMART}
+{$include_once SRL-6/SRL.simba}
+
 {
 this is an item database include
 }
-{$include_once SRL-6/SRL.simba}
+
+function reverse(s: string): string;
+var
+  ptr: ^Char;
+  i, l: Integer;
+begin
+  l := Length(s);
+  setLength(result, l);
+  ptr := @s[l + 1];
+
+  for i := l downto 1 do
+    Result[i] := (Ptr - i)^;
+end;
+
+function getNameFromTOptions(options: __TOptionArray): string;
+var
+  i, l: integer;
+  line1, line2: string;
+begin
+  if (length(options) < 2) then exit();
+  line1 := reverse(options[0].str);
+  line2 := reverse(options[1].str);
+  l := min(length(line1), length(line2));
+  for i := 1 to l do
+  begin
+    if not(line1[i] = line2[i]) then
+    begin
+      setLength(line1, i-2);
+      break;
+    end;
+  end;
+  result := reverse(line1);
+end;
+
 type
   TRSItem = record
     name: string;
@@ -11,31 +47,13 @@ type
 
   TRSItemArray = array of TRSItem;
 
-function RSItem(name: string; bCount, w, h: integer; tpa: TPointArray): TRSItem;
+procedure TRSItem.setInfo(item_name: string; black_count, width, height: integer; itemTPA: TPointArray);
 begin
-  result.name := name;
-  result.bCount := bCount;
-  result.w := w;
-  result.h := h;
-  result.tpa := tpa;
-end;
-
-procedure TRSItem.setInfo(item: TRSItem);
-begin
-  self := item;
-end;
-
-function getNameFromTOptions(options: __TOptionArray): string;
-var
-  i, h_min, h_max: integer;
-begin
-  if (length(options) < 2) then exit();
-  h_min := min(high(options[0],options[1]));
-  h_max := max(
-  for i := 0 to h do
-  begin
-
-  end;
+  self.name := item_name;
+  self.bCount := black_count;
+  self.w := width;
+  self.h := height;
+  self.tpa := itemTPA;
 end;
 
 function TRSItem.getItemInfo(bounds: TBox; get_name: boolean = false): boolean;
@@ -53,14 +71,20 @@ begin
     tpab := tpaz.getBounds;
     p := [tpaz[low(tpaz)].x*-1, tpaz[low(tpaz)].y*-1];
     tpaz.offSet(p);
-    mouse(p2.gaussRange(-4, 4), MOUSE_RIGHT, MOUSE_HUMAN);
-    if chooseOption.isOpen(randomRange(2000, 3000)) then
+    if get_name then
     begin
-      options := chooseOption.__getOptions;
-      chooseOption.close();
-      item_text := getNameFromTOptions(options);
+      mouse(p2.gaussRange(-4, 4), MOUSE_RIGHT, MOUSE_HUMAN);
+      if chooseOption.isOpen(randomRange(2000, 3000)) then
+      begin
+        wait(100);
+        options := chooseOption.__getOptions;
+        chooseOption.debugOptions;
+        chooseOption.close();
+        item_text := getNameFromTOptions(options);
+        wait(randomRange(100, 200));
+      end;
     end;
-    self.setInfo(RSItem(item_text, length(tpaz), tpab.getWidth, tpab.getHeight, tpaz));
+    self.setInfo(item_text, length(tpaz), tpab.getWidth, tpab.getHeight, tpaz);
   end;
 end;
 
@@ -72,10 +96,20 @@ end;
 
 function TRSItem.toString: TStringArray;
 begin
-  result := [self.name, 'black count: ' + toStr(self.bCount), 'w: '+toStr(self.w), 'h: '+toStr(self.h), toStr(self.tpa)];
+  result := ['item: ' + self.name, 'black count: ' + toStr(self.bCount), 'w: '+toStr(self.w), 'h: '+toStr(self.h)];
 end;
 
-function TRSItemArray.getItemInfo(bounds: TBoxArray; get_name: boolean = false): boolean;
+procedure TRSItem.smartDebug();
+begin
+
+  try
+    smartImage.debugTPA(self.tpa, true);
+  finally
+    print('Unable to debug TPA onto smart canvas');
+  end;
+end;
+
+function TRSItemArray.getItemsInfo(bounds: TBoxArray; get_name: boolean = false): boolean;
 var
   h: integer := high(bounds);
   i: integer;
@@ -84,4 +118,9 @@ begin
   for i := 0 to h do
     if item.getItemInfo(bounds[i], get_name) then insert(item, self);
   result := length(self) > 0;
+end;
+
+procedure TRSItemArray.smartDebug();
+begin
+
 end;

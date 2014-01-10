@@ -612,7 +612,7 @@ var
   item: TRSItem;
   i, h, j: integer;
 begin
-  items.getItemInfo(tabBackpack.getSlotBoxes);
+  items.getItemsInfo(tabBackpack.getSlotBoxes);
   h := high(items);
   for i := 0 to h do
   begin
@@ -629,7 +629,6 @@ end;
 
 var
   t, z: integer;
-
 begin
   smartEnableDrawing := true;
   setupSRL;
@@ -638,11 +637,11 @@ begin
   initInfo;
   paintGfx;
   clearProggy;
-  t := getSystemTime;
-  memories.getItemInfo(tabBackpack.getSlotBoxes);
-  z := uniqueItems;
-  t := getSystemTime-t;
-  writeln('that took: '+toStr(t));
-  writeln(z);
+
+  memory.getItemInfo(tabBackpack.getSlotBox(1));
+  writeln(memory.toString);
+  memory.smartDebug();
+
+  terminateScript;
   while players.getActive > 0 do mainLoop;
 end.
